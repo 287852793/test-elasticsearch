@@ -1,5 +1,11 @@
 # test-elasticsearch
 
+#### NOTE
+es7 支持 jdk 8  
+es8 最低需要 jdk 17  
+两者的 java 依赖和代码实现有较大差别，需要注意
+以下内容基于 es8 进行测试
+
 #### 启动服务容器
 启动容器时，如果 es 挂载的本地路径如：
 ```
@@ -53,3 +59,55 @@ GET _cat/indices?v
 ```
 
 能返回空列表说明正常运行。
+
+#### Java Web Spring Boot 测试
+启动服务，出现如下内容：
+```log
+2025-12-11T09:46:54.782+08:00  INFO 29036 --- [           main] com.example.demo.config.EsIndexConfig    : ES 索引不存在，将自动创建：my_index
+2025-12-11T09:46:54.970+08:00  INFO 29036 --- [           main] com.example.demo.config.EsIndexConfig    : ES 索引创建成功：my_index
+2025-12-11T09:46:55.315+08:00  INFO 29036 --- [           main] o.s.b.w.embedded.tomcat.TomcatWebServer  : Tomcat started on port 8080 (http) with context path '/'
+2025-12-11T09:46:55.325+08:00  INFO 29036 --- [           main] com.example.demo.JavaApplication         : Started JavaApplication in 2.749 seconds (process running for 3.419)
+```
+
+再次启动服务，出现如下内容：
+```log
+2025-12-11T10:03:31.492+08:00  INFO 29044 --- [           main] com.example.demo.config.EsIndexConfig    : ES 索引已存在：my_index
+2025-12-11T10:03:32.136+08:00  INFO 29044 --- [           main] o.s.b.w.embedded.tomcat.TomcatWebServer  : Tomcat started on port 8080 (http) with context path '/'
+2025-12-11T10:03:32.148+08:00  INFO 29044 --- [           main] com.example.demo.JavaApplication         : Started JavaApplication in 6.296 seconds (process running for 7.882)
+```
+
+通过 postman 测试
+
+写入文章  
+```bash
+POST http://localhost:8080/article/add
+Content-Type: application/json
+```
+
+Body：
+```json
+{
+"id": "1",
+"title": "Elasticsearch 入门教程",
+"content": "这是一个关于全⽂搜索的教程。"
+}
+```
+
+
+测试搜索  
+```bash
+GET http://localhost:8080/article/search?keyword=搜索
+```
+
+返回示例：
+
+```json
+[
+  {
+    "id": "1",
+    "title": "Elasticsearch 入门教程",
+    "content": "这是一个关于全⽂搜索的教程。",
+    "createdAt": "2025-12-11T10:06:13.8347995"
+  }
+]
+```
